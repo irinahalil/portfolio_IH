@@ -41,6 +41,20 @@ body {
   overflow-x: hidden;
 }
 
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--accent-2) 0%, #ff956d 100%);
+  box-shadow: 0 0 18px rgba(255, 107, 74, 0.45);
+  z-index: 200;
+  pointer-events: none;
+}
+
 body::before {
   content: "";
   position: fixed;
@@ -141,7 +155,7 @@ a:hover {
   font-size: 0.7rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-2);
   margin-bottom: 1rem;
 }
 
@@ -205,13 +219,15 @@ p:last-child {
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 1.5rem;
-  border-left: 2px solid var(--accent);
+  border-left: 2px solid var(--accent-2);
   padding-left: 1rem;
 }
 
 .hero-visual {
   position: relative;
   isolation: isolate;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 .hero-photo-frame {
@@ -227,12 +243,14 @@ p:last-child {
     0 24px 80px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(93, 255, 154, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  will-change: transform;
 }
 
 .hero-photo-frame img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 22%;
   filter: saturate(1.05) contrast(1.02);
 }
 
@@ -248,6 +266,27 @@ p:last-child {
   pointer-events: none;
 }
 
+.hero-photo-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at 25% 18%,
+      rgba(93, 255, 154, 0.14) 0%,
+      rgba(93, 255, 154, 0.02) 35%,
+      transparent 62%
+    ),
+    radial-gradient(
+      circle at 78% 82%,
+      rgba(255, 107, 74, 0.16) 0%,
+      rgba(255, 107, 74, 0.03) 38%,
+      transparent 66%
+    );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
 .hero-deco {
   position: absolute;
   width: 140px;
@@ -259,6 +298,7 @@ p:last-child {
   right: -20px;
   animation: spin-slow 28s linear infinite;
   pointer-events: none;
+  will-change: transform;
 }
 
 .hero-deco-2 {
@@ -377,7 +417,7 @@ p:last-child {
   font-family: var(--font-mono);
   font-size: 0.65rem;
   letter-spacing: 0.12em;
-  color: var(--accent);
+  color: var(--accent-2);
   margin-bottom: 0.75rem;
 }
 
@@ -403,6 +443,36 @@ p:last-child {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid var(--stroke);
+}
+
+.project-card {
+  transform-style: preserve-3d;
+  transform: perspective(1000px) rotateX(var(--rx, 0deg))
+    rotateY(var(--ry, 0deg)) translateY(var(--ty, 0));
+  transition:
+    transform 0.28s var(--ease-out),
+    background 0.35s var(--ease-out),
+    border-color 0.35s var(--ease-out),
+    box-shadow 0.35s var(--ease-out);
+}
+
+.project-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    220px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 107, 74, 0.2),
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-out);
+  pointer-events: none;
+}
+
+.project-card:hover::before {
+  opacity: 1;
 }
 
 /* Two columns */
@@ -466,7 +536,7 @@ p:last-child {
   content: "—";
   position: absolute;
   left: 0;
-  color: var(--accent);
+  color: var(--accent-2);
   font-family: var(--font-mono);
 }
 
@@ -514,9 +584,10 @@ footer {
 
 footer h3 {
   font-size: 0.85rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   color: var(--text-muted);
 }
 
@@ -587,15 +658,26 @@ footer a:hover {
 /* Reveal animation */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(30px);
   transition:
     opacity 0.7s var(--ease-out),
-    transform 0.7s var(--ease-out);
+    transform 0.7s var(--ease-out),
+    filter 0.7s var(--ease-out);
+  filter: blur(7px);
 }
 
 .reveal.visible {
   opacity: 1;
   transform: translateY(0);
+  filter: blur(0);
+}
+
+h2.reveal:not(.visible),
+h1.reveal:not(.visible),
+.manifest.reveal:not(.visible) {
+  transform: translateY(36px);
+  filter: blur(12px);
+  transition-duration: 0.8s;
 }
 
 .reveal-stagger > *:nth-child(1) {
@@ -625,9 +707,36 @@ footer a:hover {
     opacity: 1;
     transform: none;
     transition: none;
+    filter: none;
   }
   .hero-deco,
   .hero-deco-2 {
     animation: none;
+  }
+  .scroll-progress {
+    display: none;
+  }
+  .project-card {
+    transform: none !important;
+  }
+  .project-card::before {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-photo-frame img {
+    object-position: 52% 18%;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero-photo-frame {
+    aspect-ratio: 3 / 4;
+    max-height: 72vh;
+  }
+
+  .hero-photo-frame img {
+    object-position: 54% 16%;
   }
 }

@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="scroll-progress" aria-hidden="true"></div>
     <header class="site-header">
       <div class="header-inner">
         <span class="logo">Vibe Coder</span>
@@ -57,7 +58,7 @@
             <span class="hero-deco hero-deco-2" aria-hidden="true"></span>
             <figure class="hero-photo-frame">
               <img
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80"
+                src="./ChatGPT Image 2 апр. 2026 г., 19_51_29.png"
                 alt="Портрет — первый экран портфолио"
                 width="800"
                 height="1000"
@@ -352,26 +353,87 @@
         var reduced =
           window.matchMedia &&
           window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        var revealNodes = document.querySelectorAll(".reveal");
         if (reduced) {
-          document.querySelectorAll(".reveal").forEach(function (el) {
+          revealNodes.forEach(function (el) {
             el.classList.add("visible");
           });
           return;
         }
-        var nodes = document.querySelectorAll(".reveal");
+
         var io = new IntersectionObserver(
           function (entries) {
-            entries.forEach(function (e) {
-              if (e.isIntersecting) {
-                e.target.classList.add("visible");
-                io.unobserve(e.target);
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                io.unobserve(entry.target);
               }
             });
           },
-          { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
+          { rootMargin: "0px 0px -10% 0px", threshold: 0.12 }
         );
-        nodes.forEach(function (n) {
-          io.observe(n);
+        revealNodes.forEach(function (node) {
+          io.observe(node);
+        });
+
+        var progress = document.querySelector(".scroll-progress");
+        function updateProgress() {
+          var max = document.documentElement.scrollHeight - window.innerHeight;
+          var p = max > 0 ? window.scrollY / max : 0;
+          progress.style.transform = "scaleX(" + Math.min(Math.max(p, 0), 1) + ")";
+        }
+        updateProgress();
+        window.addEventListener("scroll", updateProgress, { passive: true });
+        window.addEventListener("resize", updateProgress);
+
+        var hero = document.querySelector(".hero");
+        var visual = document.querySelector(".hero-visual");
+        var photo = document.querySelector(".hero-photo-frame");
+        var deco = document.querySelector(".hero-deco");
+        var deco2 = document.querySelector(".hero-deco-2");
+
+        function heroParallax() {
+          if (!hero || !visual || !photo) return;
+          var rect = hero.getBoundingClientRect();
+          var vh = window.innerHeight || 1;
+          var progressY = Math.max(-1, Math.min(1, rect.top / vh));
+          visual.style.transform = "translate3d(0," + progressY * -20 + "px,0)";
+          photo.style.transform = "translate3d(0," + progressY * -28 + "px,0)";
+          if (deco) {
+            deco.style.transform = "translate3d(0," + progressY * -34 + "px,0)";
+          }
+          if (deco2) {
+            deco2.style.transform = "translate3d(0," + progressY * -16 + "px,0)";
+          }
+        }
+        heroParallax();
+        window.addEventListener("scroll", heroParallax, { passive: true });
+        window.addEventListener("resize", heroParallax);
+
+        var projectCards = document.querySelectorAll(".project-card");
+        projectCards.forEach(function (card) {
+          card.addEventListener("mousemove", function (event) {
+            var r = card.getBoundingClientRect();
+            var x = event.clientX - r.left;
+            var y = event.clientY - r.top;
+            var px = x / r.width;
+            var py = y / r.height;
+            var ry = (px - 0.5) * 8;
+            var rx = (0.5 - py) * 8;
+            card.style.setProperty("--rx", rx.toFixed(2) + "deg");
+            card.style.setProperty("--ry", ry.toFixed(2) + "deg");
+            card.style.setProperty("--ty", "-6px");
+            card.style.setProperty("--mx", px * 100 + "%");
+            card.style.setProperty("--my", py * 100 + "%");
+          });
+          card.addEventListener("mouseleave", function () {
+            card.style.setProperty("--rx", "0deg");
+            card.style.setProperty("--ry", "0deg");
+            card.style.setProperty("--ty", "0px");
+            card.style.setProperty("--mx", "50%");
+            card.style.setProperty("--my", "50%");
+          });
         });
       })();
     </script>
