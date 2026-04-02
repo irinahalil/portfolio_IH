@@ -715,10 +715,22 @@ footer a:hover {
   gap: 0.8rem;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.32);
   cursor: grab;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px) scale(0.94) rotate(-3deg);
+  transition:
+    opacity 0.3s var(--ease-out),
+    transform 0.3s var(--ease-out);
 }
 
 .testimonial-card:active {
   cursor: grabbing;
+}
+
+.testimonial-card[data-review-index="0"] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1) rotate(0deg);
 }
 
 .testimonial-avatar {
