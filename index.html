@@ -281,40 +281,77 @@
       <section class="section wrap" id="reviews">
         <p class="section-label reveal">Отзывы</p>
         <h2 class="reveal">Что говорят после запуска</h2>
-        <div class="testimonial-grid reveal-stagger">
-          <figure class="testimonial reveal">
-            <div class="stars" aria-hidden="true">★★★★★</div>
-            <blockquote>
-              «Первый экран сразу задал тон: и визуально дорого, и по смыслу
-              понятно, кто мы. Сроки выдержали — редкость.»
-            </blockquote>
-            <figcaption>
-              <cite>Анна М.</cite>
-              <div class="role">основатель digital-студии</div>
-            </figcaption>
-          </figure>
-          <figure class="testimonial reveal">
-            <div class="stars" aria-hidden="true">★★★★★</div>
-            <blockquote>
-              «Не ожидала, что лендинг под AI-продукт может быть таким
-              „живым“: ритм блоков, акценты, тексты — всё на своём месте.»
-            </blockquote>
-            <figcaption>
-              <cite>Дмитрий К.</cite>
-              <div class="role">продакт, B2B SaaS</div>
-            </figcaption>
-          </figure>
-          <figure class="testimonial reveal">
-            <div class="stars" aria-hidden="true">★★★★★</div>
-            <blockquote>
-              «Главное — не шаблон. Сайт ощущается как бренд, а не как
-              „ещё одна страница на конструкторе“. Рекомендую.»
-            </blockquote>
-            <figcaption>
-              <cite>Елена В.</cite>
-              <div class="role">эксперт, личный бренд</div>
-            </figcaption>
-          </figure>
+        <div class="testimonial-carousel reveal" id="testimonial-carousel">
+          <div class="testimonial-stage">
+            <article class="testimonial-card" data-review-index="0">
+              <img
+                src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=300&q=80"
+                alt="Анна М."
+                class="testimonial-avatar"
+                loading="lazy"
+              />
+              <div class="stars" aria-hidden="true">★★★★★</div>
+              <blockquote>
+                «Первый экран сразу задал тон: и визуально дорого, и по смыслу
+                понятно, кто мы. Сроки выдержали — редкость.»
+              </blockquote>
+              <p class="testimonial-name">Анна М.</p>
+              <p class="role">основатель digital-студии</p>
+            </article>
+            <article class="testimonial-card" data-review-index="1">
+              <img
+                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80"
+                alt="Дмитрий К."
+                class="testimonial-avatar"
+                loading="lazy"
+              />
+              <div class="stars" aria-hidden="true">★★★★★</div>
+              <blockquote>
+                «Не ожидала, что лендинг под AI-продукт может быть таким
+                “живым”: ритм блоков, акценты, тексты — всё на своём месте.»
+              </blockquote>
+              <p class="testimonial-name">Дмитрий К.</p>
+              <p class="role">продакт, B2B SaaS</p>
+            </article>
+            <article class="testimonial-card" data-review-index="2">
+              <img
+                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&q=80"
+                alt="Елена В."
+                class="testimonial-avatar"
+                loading="lazy"
+              />
+              <div class="stars" aria-hidden="true">★★★★★</div>
+              <blockquote>
+                «Главное — не шаблон. Сайт ощущается как бренд, а не как “ещё
+                одна страница на конструкторе”. Рекомендую.»
+              </blockquote>
+              <p class="testimonial-name">Елена В.</p>
+              <p class="role">эксперт, личный бренд</p>
+            </article>
+          </div>
+          <div class="testimonial-controls">
+            <button
+              type="button"
+              class="review-nav-btn cursor-target"
+              data-review-nav="prev"
+              aria-label="Предыдущий отзыв"
+            >
+              ←
+            </button>
+            <div class="testimonial-dots" aria-label="Навигация по отзывам">
+              <button class="review-dot is-active cursor-target" type="button" data-review-dot="0" aria-label="Отзыв 1"></button>
+              <button class="review-dot cursor-target" type="button" data-review-dot="1" aria-label="Отзыв 2"></button>
+              <button class="review-dot cursor-target" type="button" data-review-dot="2" aria-label="Отзыв 3"></button>
+            </div>
+            <button
+              type="button"
+              class="review-nav-btn cursor-target"
+              data-review-nav="next"
+              aria-label="Следующий отзыв"
+            >
+              →
+            </button>
+          </div>
         </div>
       </section>
 
@@ -367,6 +404,158 @@
           window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
         var revealNodes = document.querySelectorAll(".reveal");
+        var reviewRoot = document.getElementById("testimonial-carousel");
+        if (reviewRoot) {
+          var reviewCards = Array.prototype.slice.call(
+            reviewRoot.querySelectorAll(".testimonial-card")
+          );
+          var reviewDots = Array.prototype.slice.call(
+            reviewRoot.querySelectorAll(".review-dot")
+          );
+          var reviewPrev = reviewRoot.querySelector('[data-review-nav="prev"]');
+          var reviewNext = reviewRoot.querySelector('[data-review-nav="next"]');
+          var reviewStage = reviewRoot.querySelector(".testimonial-stage");
+          var reviewIndex = 0;
+          var dragStartX = 0;
+          var dragX = 0;
+          var isDragging = false;
+
+          function placeCard(card, config) {
+            card.style.pointerEvents = config.active ? "auto" : "none";
+            if (window.gsap) {
+              gsap.to(card, {
+                x: config.x,
+                y: config.y,
+                scale: config.scale,
+                rotate: config.rotate,
+                opacity: config.opacity,
+                zIndex: config.z,
+                duration: 0.35,
+                ease: "power3.out"
+              });
+            } else {
+              card.style.transform =
+                "translate(" +
+                config.x +
+                "px," +
+                config.y +
+                "px) scale(" +
+                config.scale +
+                ") rotate(" +
+                config.rotate +
+                "deg)";
+              card.style.opacity = config.opacity;
+              card.style.zIndex = String(config.z);
+            }
+          }
+
+          function renderReviews() {
+            var total = reviewCards.length;
+            reviewCards.forEach(function (card, i) {
+              var relative = (i - reviewIndex + total) % total;
+              if (relative === 0) {
+                placeCard(card, {
+                  x: dragX,
+                  y: 0,
+                  scale: 1,
+                  rotate: dragX / 45,
+                  opacity: 1,
+                  z: 3,
+                  active: true
+                });
+              } else if (relative === 1) {
+                placeCard(card, {
+                  x: 0,
+                  y: 10,
+                  scale: 0.96,
+                  rotate: -2,
+                  opacity: 0.62,
+                  z: 2,
+                  active: false
+                });
+              } else if (relative === total - 1) {
+                placeCard(card, {
+                  x: 0,
+                  y: 16,
+                  scale: 0.93,
+                  rotate: -4,
+                  opacity: 0.32,
+                  z: 1,
+                  active: false
+                });
+              } else {
+                placeCard(card, {
+                  x: 0,
+                  y: 18,
+                  scale: 0.92,
+                  rotate: -5,
+                  opacity: 0,
+                  z: 0,
+                  active: false
+                });
+              }
+            });
+
+            reviewDots.forEach(function (dot, i) {
+              dot.classList.toggle("is-active", i === reviewIndex);
+            });
+          }
+
+          function goToReview(nextIndex) {
+            var total = reviewCards.length;
+            reviewIndex = (nextIndex + total) % total;
+            dragX = 0;
+            renderReviews();
+          }
+
+          function nextReview() {
+            goToReview(reviewIndex + 1);
+          }
+
+          function prevReview() {
+            goToReview(reviewIndex - 1);
+          }
+
+          if (reviewNext) reviewNext.addEventListener("click", nextReview);
+          if (reviewPrev) reviewPrev.addEventListener("click", prevReview);
+          reviewDots.forEach(function (dot, i) {
+            dot.addEventListener("click", function () {
+              goToReview(i);
+            });
+          });
+
+          if (reviewStage) {
+            reviewStage.addEventListener("pointerdown", function (e) {
+              isDragging = true;
+              dragStartX = e.clientX;
+              reviewStage.setPointerCapture(e.pointerId);
+            });
+            reviewStage.addEventListener("pointermove", function (e) {
+              if (!isDragging) return;
+              dragX = e.clientX - dragStartX;
+              renderReviews();
+            });
+            reviewStage.addEventListener("pointerup", function () {
+              if (!isDragging) return;
+              isDragging = false;
+              if (Math.abs(dragX) > 90) {
+                if (dragX < 0) nextReview();
+                else prevReview();
+              } else {
+                dragX = 0;
+                renderReviews();
+              }
+            });
+            reviewStage.addEventListener("pointercancel", function () {
+              isDragging = false;
+              dragX = 0;
+              renderReviews();
+            });
+          }
+
+          renderReviews();
+        }
+
         if (reduced) {
           revealNodes.forEach(function (el) {
             el.classList.add("visible");
@@ -468,7 +657,7 @@
 
         document
           .querySelectorAll(
-            ".btn, .nav-links a, .card, .testimonial, .cta-block a, footer a"
+            ".btn, .nav-links a, .card, .testimonial-card, .review-nav-btn, .review-dot, .cta-block a, footer a"
           )
           .forEach(function (el) {
             el.classList.add("cursor-target");
