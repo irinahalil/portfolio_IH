@@ -15,6 +15,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   </head>
   <body>
     <div class="scroll-progress" aria-hidden="true"></div>
@@ -40,9 +41,13 @@
             <p class="hero-kicker">
               Vibe Coder / Portfolio / Web &amp; AI Experiences
             </p>
-            <h1>
-              Я делаю сайты, интерфейсы и digital-проекты, которые выглядят как
-              вайб, а работают как система
+            <h1
+              class="hero-title"
+              data-full-text="Я делаю сайты, интерфейсы и digital-проекты, которые выглядят как вайб, а работают как система"
+              aria-label="Я делаю сайты, интерфейсы и digital-проекты, которые выглядят как вайб, а работают как система"
+            >
+              <span class="hero-title-typed"></span
+              ><span class="hero-title-cursor" aria-hidden="true">_</span>
             </h1>
             <p>
               Не просто «что-то сверстать», а собрать ощущение, стиль, логику и
@@ -435,6 +440,84 @@
             card.style.setProperty("--my", "50%");
           });
         });
+
+        var heroTitle = document.querySelector(".hero-title");
+        var typedTarget = document.querySelector(".hero-title-typed");
+        var titleCursor = document.querySelector(".hero-title-cursor");
+        if (heroTitle && typedTarget) {
+          var mainText = heroTitle.getAttribute("data-full-text") || "";
+          var heroTexts = [
+            mainText,
+            "Не просто сверстать, а создать ощущение бренда",
+            "От первого вайба до сильной работающей системы"
+          ];
+          var typeSpeed = 0.04;
+          var deleteSpeed = 0.025;
+          var pauseBetween = 1.5;
+          var state = { i: 0 };
+          var textIndex = 0;
+
+          function showFullTitleInstantly() {
+            typedTarget.textContent = mainText;
+            if (titleCursor) {
+              titleCursor.style.display = "none";
+            }
+          }
+
+          function typeText(text, onDone) {
+            state.i = 0;
+            gsap.to(state, {
+              i: text.length,
+              duration: Math.max(text.length * typeSpeed, 0.9),
+              ease: "none",
+              onUpdate: function () {
+                typedTarget.textContent = text.slice(0, Math.floor(state.i));
+              },
+              onComplete: onDone
+            });
+          }
+
+          function deleteText(onDone) {
+            var current = typedTarget.textContent;
+            state.i = current.length;
+            gsap.to(state, {
+              i: 0,
+              duration: Math.max(current.length * deleteSpeed, 0.45),
+              ease: "none",
+              onUpdate: function () {
+                typedTarget.textContent = current.slice(0, Math.floor(state.i));
+              },
+              onComplete: onDone
+            });
+          }
+
+          function runCycle() {
+            var text = heroTexts[textIndex];
+            typeText(text, function () {
+              gsap.delayedCall(pauseBetween, function () {
+                deleteText(function () {
+                  textIndex = (textIndex + 1) % heroTexts.length;
+                  runCycle();
+                });
+              });
+            });
+          }
+
+          if (!window.gsap || reduced) {
+            showFullTitleInstantly();
+          } else {
+            if (titleCursor) {
+              gsap.to(titleCursor, {
+                opacity: 0,
+                duration: 0.45,
+                repeat: -1,
+                yoyo: true,
+                ease: "power1.inOut"
+              });
+            }
+            gsap.delayedCall(0.35, runCycle);
+          }
+        }
       })();
     </script>
   </body>
