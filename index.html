@@ -18,6 +18,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   </head>
   <body>
+    <div class="target-cursor-wrapper" aria-hidden="true">
+      <div class="target-cursor-dot"></div>
+      <div class="target-cursor-corner corner-tl"></div>
+      <div class="target-cursor-corner corner-tr"></div>
+      <div class="target-cursor-corner corner-br"></div>
+      <div class="target-cursor-corner corner-bl"></div>
+    </div>
     <div class="scroll-progress" aria-hidden="true"></div>
     <header class="site-header">
       <div class="header-inner">
@@ -440,6 +447,177 @@
             card.style.setProperty("--my", "50%");
           });
         });
+
+        var cursorWrapper = document.querySelector(".target-cursor-wrapper");
+        var cursorDot = document.querySelector(".target-cursor-dot");
+        var cursorCorners = document.querySelectorAll(".target-cursor-corner");
+        var targetSelector = ".cursor-target";
+        var spinDuration = 2;
+        var hoverDuration = 0.2;
+        var parallaxOn = true;
+        var hasTouch =
+          "ontouchstart" in window || navigator.maxTouchPoints > 0;
+        var isMobile = hasTouch || window.innerWidth <= 900;
+        var activeTarget = null;
+        var spinTl = null;
+        var cursorX = window.innerWidth / 2;
+        var cursorY = window.innerHeight / 2;
+        var strengthObj = { value: 0 };
+        var cornerTargets = null;
+        var constants = { borderWidth: 3, cornerSize: 12 };
+
+        document
+          .querySelectorAll(
+            ".btn, .nav-links a, .card, .testimonial, .cta-block a, footer a"
+          )
+          .forEach(function (el) {
+            el.classList.add("cursor-target");
+          });
+
+        function createSpinTimeline() {
+          if (!window.gsap || !cursorWrapper) return;
+          if (spinTl) spinTl.kill();
+          spinTl = gsap
+            .timeline({ repeat: -1 })
+            .to(cursorWrapper, {
+              rotation: "+=360",
+              duration: spinDuration,
+              ease: "none"
+            });
+        }
+
+        function resetCorners() {
+          if (!window.gsap) return;
+          var positions = [
+            { x: -18, y: -18 },
+            { x: 6, y: -18 },
+            { x: 6, y: 6 },
+            { x: -18, y: 6 }
+          ];
+          cursorCorners.forEach(function (corner, index) {
+            gsap.to(corner, {
+              x: positions[index].x,
+              y: positions[index].y,
+              duration: 0.28,
+              ease: "power3.out"
+            });
+          });
+        }
+
+        function activateTarget(target) {
+          if (!window.gsap || !cursorWrapper || !cursorCorners.length) return;
+          activeTarget = target;
+          if (spinTl) spinTl.pause();
+          gsap.to(cursorWrapper, { rotation: 0, duration: 0.2, ease: "power2.out" });
+          var rect = target.getBoundingClientRect();
+          var b = constants.borderWidth;
+          var s = constants.cornerSize;
+          cornerTargets = [
+            { x: rect.left - b, y: rect.top - b },
+            { x: rect.right + b - s, y: rect.top - b },
+            { x: rect.right + b - s, y: rect.bottom + b - s },
+            { x: rect.left - b, y: rect.bottom + b - s }
+          ];
+          gsap.to(strengthObj, { value: 1, duration: hoverDuration, ease: "power2.out" });
+        }
+
+        function deactivateTarget() {
+          if (!window.gsap) return;
+          activeTarget = null;
+          cornerTargets = null;
+          gsap.to(strengthObj, {
+            value: 0,
+            duration: 0.2,
+            ease: "power2.out",
+            onComplete: resetCorners
+          });
+          if (spinTl) spinTl.resume();
+        }
+
+        if (window.gsap && !isMobile && !reduced && cursorWrapper) {
+          document.body.classList.add("custom-cursor-on");
+          gsap.set(cursorWrapper, {
+            xPercent: -50,
+            yPercent: -50,
+            x: cursorX,
+            y: cursorY
+          });
+          resetCorners();
+          createSpinTimeline();
+
+          window.addEventListener(
+            "mousemove",
+            function (e) {
+              cursorX = e.clientX;
+              cursorY = e.clientY;
+              gsap.to(cursorWrapper, {
+                x: cursorX,
+                y: cursorY,
+                duration: 0.1,
+                ease: "power3.out"
+              });
+            },
+            { passive: true }
+          );
+
+          window.addEventListener("mouseover", function (e) {
+            var t = e.target && e.target.closest(targetSelector);
+            if (!t) {
+              if (activeTarget) deactivateTarget();
+              return;
+            }
+            if (t !== activeTarget) activateTarget(t);
+          });
+
+          window.addEventListener(
+            "scroll",
+            function () {
+              if (!activeTarget || !cornerTargets) return;
+              var rect = activeTarget.getBoundingClientRect();
+              var b = constants.borderWidth;
+              var s = constants.cornerSize;
+              cornerTargets = [
+                { x: rect.left - b, y: rect.top - b },
+                { x: rect.right + b - s, y: rect.top - b },
+                { x: rect.right + b - s, y: rect.bottom + b - s },
+                { x: rect.left - b, y: rect.bottom + b - s }
+              ];
+            },
+            { passive: true }
+          );
+
+          window.addEventListener("mousedown", function () {
+            if (!cursorDot) return;
+            gsap.to(cursorDot, { scale: 0.7, duration: 0.2 });
+            gsap.to(cursorWrapper, { scale: 0.9, duration: 0.2 });
+          });
+          window.addEventListener("mouseup", function () {
+            if (!cursorDot) return;
+            gsap.to(cursorDot, { scale: 1, duration: 0.2 });
+            gsap.to(cursorWrapper, { scale: 1, duration: 0.2 });
+          });
+
+          gsap.ticker.add(function () {
+            if (!cornerTargets || !cursorCorners.length || strengthObj.value <= 0) {
+              return;
+            }
+            cursorCorners.forEach(function (corner, i) {
+              var tx = cornerTargets[i].x - cursorX;
+              var ty = cornerTargets[i].y - cursorY;
+              var currentX = gsap.getProperty(corner, "x");
+              var currentY = gsap.getProperty(corner, "y");
+              var nextX = currentX + (tx - currentX) * strengthObj.value;
+              var nextY = currentY + (ty - currentY) * strengthObj.value;
+              gsap.to(corner, {
+                x: nextX,
+                y: nextY,
+                duration: parallaxOn ? 0.15 : 0,
+                ease: "power1.out",
+                overwrite: "auto"
+              });
+            });
+          });
+        }
 
         var heroTitle = document.querySelector(".hero-title");
         var typedTarget = document.querySelector(".hero-title-typed");
