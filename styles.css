@@ -339,7 +339,7 @@ p:last-child {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 22%;
+  object-position: 48% 20%;
   filter: saturate(1.05) contrast(1.02);
 }
 
@@ -361,16 +361,16 @@ p:last-child {
   inset: 0;
   background:
     radial-gradient(
-      circle at 25% 18%,
-      rgba(93, 255, 154, 0.14) 0%,
-      rgba(93, 255, 154, 0.02) 35%,
-      transparent 62%
+      circle at 22% 24%,
+      rgba(255, 107, 74, 0.12) 0%,
+      rgba(255, 107, 74, 0.02) 32%,
+      transparent 58%
     ),
     radial-gradient(
-      circle at 78% 82%,
-      rgba(255, 107, 74, 0.16) 0%,
-      rgba(255, 107, 74, 0.03) 38%,
-      transparent 66%
+      circle at 78% 20%,
+      rgba(93, 255, 154, 0.1) 0%,
+      rgba(93, 255, 154, 0.02) 40%,
+      transparent 65%
     );
   mix-blend-mode: screen;
   pointer-events: none;
@@ -889,7 +889,7 @@ h1.reveal:not(.visible),
 
 @media (max-width: 900px) {
   .hero-photo-frame img {
-    object-position: 52% 18%;
+    object-position: 50% 17%;
   }
 }
 
@@ -900,6 +900,6 @@ h1.reveal:not(.visible),
   }
 
   .hero-photo-frame img {
-    object-position: 54% 16%;
+    object-position: 52% 15%;
   }
 }
